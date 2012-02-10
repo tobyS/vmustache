@@ -1,0 +1,25 @@
+
+Template
+  Text 'Some text here
+and more text
+   and more with a '
+  Variable 'variable'
+  Text '
+'
+  Section 'outer_section'
+    Text '
+  In the section '
+    Text 'and '
+    Variable 'some_variable'
+    Text '
+  '
+    Section 'inner_section'
+      Text ' 	'
+      Variable 'foo'
+      Text ''
+      Variable 'bar'
+      Text ''
+      Variable 'baz'
+      Text '  '
+    Text '
+'

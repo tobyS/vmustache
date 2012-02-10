@@ -1,0 +1,13 @@
+Some text here
+and more text
+   and more with a {{variable}}
+
+{{#outer_section}}
+
+  In the section {{!there is a comment}} and {{some_variable}}
+
+  {{#inner_section}}
+ 	{{foo}}{{bar}}{{baz}}
+  {{/inner_section}}
+
+{{/outer_section}}

@@ -156,3 +156,58 @@ func! vmustache#DumpChildren(children, indent)
 		call vmustache#DumpNode(child, l:indent)
 	endfor
 endfunc
+
+"""""""""
+" Render
+"""""""""
+
+func! vmustache#Render(node, data)
+	let l:result = ""
+	if (a:node["type"] == "template")
+		let l:result = l:result . vmustache#RenderBlock(a:node, a:data)
+	elseif (a:node["type"] == "section")
+		let l:result = l:result . vmustache#RenderSection(a:node, a:data)
+	elseif (a:node["type"] == "var_escaped")
+		let l:result = l:result . vmustache#RenderVariable(a:node, a:data)
+	elseif (a:node["type"] == "text")
+		let l:result = l:result . vmustache#RenderText(a:node, a:data)
+	else
+		throw "Unknown node: " . string(node)
+	endif
+	return l:result
+endfunc
+
+func! vmustache#RenderBlock(block, data)
+	let l:result = ""
+	for child in a:block["children"]
+		if (has_key(child, "name") && has_key(a:data, child["name"]))
+			let l:result = l:result . vmustache#Render(child, a:data[child["name"]])
+		else
+			let l:result = l:result . vmustache#Render(child, [])
+		endif
+	endfor
+	return result
+endfunc
+
+func! vmustache#RenderSection(section, data)
+	let l:result = ""
+	if (type(a:data) != 3)
+		let l:data = [a:data]
+	else
+		let l:data = a:data
+	endif
+	for l:element in l:data
+		let l:result = l:result . vmustache#RenderBlock(a:section, l:element)
+	endfor
+	return l:result
+endfunc
+
+func! vmustache#RenderVariable(variable, data)
+	" return "<data>" . a:data . "</data>"
+	return a:data
+endfunc
+
+func! vmustache#RenderText(node, data)
+	" return "<text>" . a:node["value"] . "</text>"
+	return a:node["value"]
+endfunc

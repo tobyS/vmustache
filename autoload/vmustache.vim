@@ -23,8 +23,8 @@ func! vmustache#Tokenize(text)
 		if (l:matchstart != -1)
 			let l:match = matchstr(a:text, l:regex, l:lastindex)
 			let l:matchend = l:matchstart + strlen(l:match)
-			if (l:lastindex + 1 != l:matchstart)
-				call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex + 1, l:matchstart))
+			if (l:lastindex != l:matchstart)
+				call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex, l:matchstart))
 			endif
 			call add(l:tokens, vmustache#ExtractTagToken(a:text, l:matchstart, l:matchend))
 			let l:lastindex = l:matchend
@@ -85,6 +85,8 @@ func! vmustache#Parse(tokens)
 			let l:stack = vmustache#ReduceSection(l:stack)
 		elseif (token["type"] == "comment")
 			let l:stack = vmustache#ReduceComment(l:stack)
+		elseif (token["type"] == "var_escaped")
+			let l:stack = vmustache#ReduceVariable(l:stack)
 		endif
 	endfor
 	let l:stack = vmustache#ReduceTemplate(l:stack)
@@ -102,6 +104,13 @@ func! vmustache#ReduceSection(stack)
 		call insert(l:section["children"], l:token)
 	endwhile
 	call add(a:stack, l:section)
+	return a:stack
+endfunc
+
+func! vmustache#ReduceVariable(stack)
+	let l:token = remove(a:stack, -1)
+	let l:variable = {"type": "var_escaped", "name": l:token["value"]}
+	call add(a:stack, l:variable)
 	return a:stack
 endfunc
 
@@ -131,7 +140,7 @@ func! vmustache#DumpNode(node, indent)
 		call vmustache#Dump("Section '" . a:node["name"] . "'", a:indent)
 		call vmustache#DumpChildren(a:node["children"], a:indent)
 	elseif (a:node["type"] == "var_escaped")
-		call vmustache#Dump("Variable '" . a:node["value"] . "'", a:indent)
+		call vmustache#Dump("Variable '" . a:node["name"] . "'", a:indent)
 	elseif (a:node["type"] == "text")
 		call vmustache#Dump("Text '" . a:node["value"] . "'", a:indent)
 	endif

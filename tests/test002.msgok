@@ -1,9 +1,29 @@
 
-
-{'children': [{'type': 'text', 'value': 'Some text here
+Template
+  Text 'Some text here
 and more text
-   and more with a '}, {'type': 'var_escaped', 'value': 'variable'}, {'type': 'text', 'value': '
-'}, {'name': 'outer_section', 'type': 'section', 'children': [{'type': 'text', 'value': '
-  In the section '}, {'type': 'text', 'value': 'and '}, {'type': 'var_escaped', 'value': 'some_variable'}, {'type': 'text', 'value': '
-  '}, {'name': 'inner_section', 'type': 'section', 'children': [{'type': 'text', 'value': ' 	'}, {'type': 'var_escaped', 'value': 'foo'}, {'type': 'text', 'value': ''}, {'type': 'var_escaped', 'value': 'bar'}, {'type': 'text', 'value': ''}, {'type': 'var_escaped', 'value': 'baz'}, {'type': 'text', 'value': '  '}]}, {'type': 'text', 'value': '
-'}]}], 'type': 'template'}
+   and more with a '
+  Variable 'variable'
+  Text '
+
+'
+  Section 'outer_section'
+    Text '
+
+  In the section '
+    Text ' and '
+    Variable 'some_variable'
+    Text '
+
+  '
+    Section 'inner_section'
+      Text '
+ 	'
+      Variable 'foo'
+      Variable 'bar'
+      Variable 'baz'
+      Text '
+  '
+    Text '
+
+'

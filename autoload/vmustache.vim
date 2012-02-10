@@ -53,7 +53,7 @@ endfunc
 
 func! vmustache#ExtractTagToken(text, start, end)
 	let l:token = vmustache#ExtractToken(a:text, a:start, a:end)
-	return {"type": GetTagType(l:token), "value": l:token }
+	return {"type": GetTagType(l:token), "value": vmustache#GetTagName(l:token) }
 endfunc
 
 func! GetTagType(tag)
@@ -63,4 +63,9 @@ func! GetTagType(tag)
 		endif
 	endfor
 	throw "Could not recognize tag: " . a:tag
+endfunc
+
+func! vmustache#GetTagName(token)
+	let l:matches = matchlist(a:token, '{{[#/&!]\?\([^}]\+\)}}')
+    return l:matches[1]
 endfunc

@@ -5,32 +5,32 @@ and more text
    and more with a "
 
 Token: var_escaped
-"{{variable}}"
+"variable"
 
 Token: text
 "
 "
 
 Token: section_start
-"{{#section}}"
+"section"
 
 Token: text
 "
   In the section "
 
 Token: comment
-"{{!there is a comment}}"
+"there is a comment"
 
 Token: text
 "and "
 
 Token: var_escaped
-"{{some_variable}}"
+"some_variable"
 
 Token: text
 "
 "
 
 Token: section_end
-"{{/section}}"
+"section"
 

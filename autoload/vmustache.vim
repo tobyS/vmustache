@@ -1,15 +1,17 @@
-let tagmap = {}
-let tagmap["{{#"] = "section_start"
-let tagmap["{{/"] = "section_end"
-let tagmap["{{&"] = "var_unescaped"
-let tagmap["{{!"] = "comment"
-let tagmap["{{[^#/&!]"]  = "var_escaped"
+let s:tagmap = {}
+let s:tagmap["{{#"] = "section_start"
+let s:tagmap["{{/"] = "section_end"
+let s:tagmap["{{&"] = "var_unescaped"
+let s:tagmap["{{!"] = "comment"
+let s:tagmap["{{[^#/&!]"]  = "var_escaped"
 
-" TODO: Not supported are inverted sections and partials
+" TODO: Unescaped variables, inverted sections and partials are not
+" suppported, yet
 
 """""""""""""
 " Tokenizing
 """""""""""""
+
 func! vmustache#Tokenize(text)
 
 	let l:regex = "{{[^}]*}}"
@@ -18,23 +20,21 @@ func! vmustache#Tokenize(text)
 	let l:lastindex = -1
 	let l:hasmore = 1
 
-	while (l:hasmore > 0)
-		let l:matchstart = match(a:text, l:regex, l:lastindex)
-		if (l:matchstart != -1)
-			let l:match = matchstr(a:text, l:regex, l:lastindex)
-			let l:matchend = l:matchstart + strlen(l:match)
-			if (l:lastindex != l:matchstart)
-				call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex, l:matchstart))
-			endif
-			call add(l:tokens, vmustache#ExtractTagToken(a:text, l:matchstart, l:matchend))
-			let l:lastindex = l:matchend
-		else
-			if (l:lastindex < strlen(a:text))
-				call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex + 1, strlen(a:text)))
-			endif
-			let l:hasmore = 0
+	let l:matchstart = match(a:text, l:regex, l:lastindex)
+	while (l:matchstart != -1)
+		let l:match = matchstr(a:text, l:regex, l:lastindex)
+		let l:matchend = l:matchstart + strlen(l:match)
+		if (l:lastindex != l:matchstart)
+			call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex, l:matchstart))
 		endif
+		call add(l:tokens, vmustache#ExtractTagToken(a:text, l:matchstart, l:matchend))
+		let l:lastindex = l:matchend
+		let l:matchstart = match(a:text, l:regex, l:lastindex)
 	endwhile
+
+	if (l:lastindex < strlen(a:text))
+		call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex + 1, strlen(a:text)))
+	endif
 
 	return l:tokens
 endfunc
@@ -51,18 +51,22 @@ func! vmustache#ExtractToken(text, start, end)
 endfunc
 
 func! vmustache#ExtractTextToken(text, start, end)
-	return {"type": "text", "value": vmustache#ExtractToken(a:text, a:start, a:end)}
+	return vmustache#CreateToken("text", vmustache#ExtractToken(a:text, a:start, a:end))
 endfunc
 
 func! vmustache#ExtractTagToken(text, start, end)
 	let l:token = vmustache#ExtractToken(a:text, a:start, a:end)
-	return {"type": GetTagType(l:token), "value": vmustache#GetTagName(l:token) }
+	return vmustache#CreateToken(GetTagType(l:token), vmustache#GetTagName(l:token))
+endfunc
+
+func! vmustache#CreateToken(type, value)
+	return {"type": a:type, "value": a:value}
 endfunc
 
 func! GetTagType(tag)
-	for l:key in keys(g:tagmap)
+	for l:key in keys(s:tagmap)
 		if a:tag =~ l:key
-			return g:tagmap[l:key]
+			return s:tagmap[l:key]
 		endif
 	endfor
 	throw "Could not recognize tag: " . a:tag
@@ -95,11 +99,11 @@ endfunc
 
 func! vmustache#ReduceSection(stack)
 	let l:endtoken = remove(a:stack, -1)
-	let l:section = {"type": "section", "name": l:endtoken["value"], "children": []}
+	let l:section = vmustache#CreateSectionNode(l:endtoken["value"])
 	let l:found = 0
 	while (!empty(a:stack))
 		let l:token = remove(a:stack, -1)
-		if (l:token["type"] == "section_start" && l:token["value"] == l:endtoken["value"])
+		if (vmustache#IsSectionStart(l:token, section["name"]))
 			let l:found = 1
 			break
 		endif
@@ -112,25 +116,42 @@ func! vmustache#ReduceSection(stack)
 	return a:stack
 endfunc
 
+func! vmustache#CreateSectionNode(name)
+	return {"type": "section", "name": a:name, "children": []}
+endfunc
+
+func! vmustache#IsSectionStart(token, name)
+	return a:token["type"] == "section_start" && a:token["value"] == a:name
+endfunc
+
 func! vmustache#ReduceVariable(stack)
 	let l:token = remove(a:stack, -1)
-	let l:variable = {"type": "var_escaped", "name": l:token["value"]}
+	let l:variable = vmustache#CreateVariableNode(l:token["value"])
 	call add(a:stack, l:variable)
 	return a:stack
 endfunc
 
+func! vmustache#CreateVariableNode(name)
+	return {"type": "var_escaped", "name": a:name}
+endfunc
+
+" TODO: Should we actually keep comments and just not render them?
 func! vmustache#ReduceComment(stack)
 	call remove(a:stack, -1)
 	return a:stack
 endfunc
 
 func! vmustache#ReduceTemplate(stack)
-	let l:template = {"type": "template", "children": []}
+	let l:template = vmustache#CreateTemplateNode()
 	while (!empty(a:stack))
 		call insert(l:template["children"], remove(a:stack, -1))
 	endwhile
 	call add(a:stack, l:template)
 	return a:stack
+endfunc
+
+func! vmustache#CreateTemplateNode()
+	return {"type": "template", "children": []}
 endfunc
 
 func! vmustache#DumpTemplate(template)
@@ -139,19 +160,19 @@ endfunc
 
 func! vmustache#DumpNode(node, indent)
 	if (a:node["type"] == "template")
-		call vmustache#Dump("Template", a:indent)
+		call vmustache#DumpText("Template", a:indent)
 		call vmustache#DumpChildren(a:node["children"], a:indent)
 	elseif (a:node["type"] == "section")
-		call vmustache#Dump("Section '" . a:node["name"] . "'", a:indent)
+		call vmustache#DumpText("Section '" . a:node["name"] . "'", a:indent)
 		call vmustache#DumpChildren(a:node["children"], a:indent)
 	elseif (a:node["type"] == "var_escaped")
-		call vmustache#Dump("Variable '" . a:node["name"] . "'", a:indent)
+		call vmustache#DumpText("Variable '" . a:node["name"] . "'", a:indent)
 	elseif (a:node["type"] == "text")
-		call vmustache#Dump("Text '" . a:node["value"] . "'", a:indent)
+		call vmustache#DumpText("Text '" . a:node["value"] . "'", a:indent)
 	endif
 endfunc
 
-func! vmustache#Dump(text, indent)
+func! vmustache#DumpText(text, indent)
 	echo repeat("  ", a:indent) . a:text
 endfunc
 

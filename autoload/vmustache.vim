@@ -96,13 +96,18 @@ endfunc
 func! vmustache#ReduceSection(stack)
 	let l:endtoken = remove(a:stack, -1)
 	let l:section = {"type": "section", "name": l:endtoken["value"], "children": []}
+	let l:found = 0
 	while (!empty(a:stack))
 		let l:token = remove(a:stack, -1)
 		if (l:token["type"] == "section_start" && l:token["value"] == l:endtoken["value"])
+			let l:found = 1
 			break
 		endif
 		call insert(l:section["children"], l:token)
 	endwhile
+	if (!l:found)
+		throw "Section missmatch. Missing start tag for '" . l:section["name"] . "'"
+	endif
 	call add(a:stack, l:section)
 	return a:stack
 endfunc
@@ -172,7 +177,7 @@ func! vmustache#Render(node, data)
 	elseif (a:node["type"] == "text")
 		let l:result = l:result . vmustache#RenderText(a:node, a:data)
 	else
-		throw "Unknown node: " . string(node)
+		throw "Unknown node: " . string(a:node)
 	endif
 	return l:result
 endfunc
@@ -204,6 +209,7 @@ endfunc
 
 func! vmustache#RenderVariable(variable, data)
 	" return "<data>" . a:data . "</data>"
+	" return string(a:data)
 	return a:data
 endfunc
 

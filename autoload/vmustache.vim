@@ -8,6 +8,21 @@ let s:tagmap["{{[^#/&!]"]  = "var_escaped"
 " TODO: Unescaped variables, inverted sections and partials are not
 " suppported, yet
 
+""""""""
+" Usage
+""""""""
+
+func vmustache#RenderString(text, data)
+	let l:tokens = vmustache#Tokenize(a:text)
+	let l:template = vmustache#Parse(l:tokens)
+	return vmustache#Render(l:template, a:data)
+endfunc
+
+func vmustache#RenderFile(file, data)
+	let l:text = join(readfile(a:file), "\n")
+	return vmustache#RenderString(l:text, a:data)
+endfunc
+
 """""""""""""
 " Tokenizing
 """""""""""""

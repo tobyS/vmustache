@@ -1,0 +1,15 @@
+Simple variable test {{simple_variable}}
+
+{{#single_section}}Single section value test{{/single_section}}
+
+{{#multi_section}}
+  Multi section value test
+{{/multi_section}}
+
+{{#variable_section}}Variable section {{variable}}{{/variable_section}}
+
+{{#nested_section}}Nested section test with {{variable}}
+  {{#inner_section}}
+    Inner section with a {{variable}}
+  {{/inner_section}}
+{{/nested_section}}

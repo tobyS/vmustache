@@ -2,7 +2,7 @@
 vmustache - Mustache template system for VIMScript
 ==================================================
 
-vmustache is an implementation of the `Mustache template system`_ in VIMScript.
+vmustache is an implementation of the `Mustache template system`__ in VIMScript.
 
 __ http://mustache.github.com/
 
@@ -13,6 +13,7 @@ Usage
 There are two essential functions in vmustache meant to be used directly:
 
 ::
+
     vmustache#RenderString(text, data)
 
 This function parses the template given as the string ``text`` and renders it
@@ -20,6 +21,7 @@ with the data provided in the hashmap ``data``. The result of the rendering is
 returned as a string. The pedant function
 
 ::
+
     vmustache#RenderFile(file, data)
 
 accepts a file name instead of a string template.

@@ -40,15 +40,15 @@ func! vmustache#Tokenize(text)
 		let l:match = matchstr(a:text, l:regex, l:lastindex)
 		let l:matchend = l:matchstart + strlen(l:match)
 		if (l:lastindex != l:matchstart)
-			call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex, l:matchstart))
+			call add(l:tokens, s:ExtractTextToken(a:text, l:lastindex, l:matchstart))
 		endif
-		call add(l:tokens, vmustache#ExtractTagToken(a:text, l:matchstart, l:matchend))
+		call add(l:tokens, s:ExtractTagToken(a:text, l:matchstart, l:matchend))
 		let l:lastindex = l:matchend
 		let l:matchstart = match(a:text, l:regex, l:lastindex)
 	endwhile
 
 	if (l:lastindex < strlen(a:text))
-		call add(l:tokens, vmustache#ExtractTextToken(a:text, l:lastindex + 1, strlen(a:text)))
+		call add(l:tokens, s:ExtractTextToken(a:text, l:lastindex + 1, strlen(a:text)))
 	endif
 
 	return l:tokens
@@ -61,24 +61,24 @@ func! vmustache#DumpTokens(tokens)
 	endfor
 endfunc
 
-func! vmustache#ExtractToken(text, start, end)
+func! s:ExtractToken(text, start, end)
 	return strpart(a:text, a:start, a:end - a:start)
 endfunc
 
-func! vmustache#ExtractTextToken(text, start, end)
-	return vmustache#CreateToken("text", vmustache#ExtractToken(a:text, a:start, a:end))
+func! s:ExtractTextToken(text, start, end)
+	return s:CreateToken("text", s:ExtractToken(a:text, a:start, a:end))
 endfunc
 
-func! vmustache#ExtractTagToken(text, start, end)
-	let l:token = vmustache#ExtractToken(a:text, a:start, a:end)
-	return vmustache#CreateToken(GetTagType(l:token), vmustache#GetTagName(l:token))
+func! s:ExtractTagToken(text, start, end)
+	let l:token = s:ExtractToken(a:text, a:start, a:end)
+	return s:CreateToken(s:GetTagType(l:token), s:GetTagName(l:token))
 endfunc
 
-func! vmustache#CreateToken(type, value)
+func! s:CreateToken(type, value)
 	return {"type": a:type, "value": a:value}
 endfunc
 
-func! GetTagType(tag)
+func! s:GetTagType(tag)
 	for l:key in keys(s:tagmap)
 		if a:tag =~ l:key
 			return s:tagmap[l:key]
@@ -87,7 +87,7 @@ func! GetTagType(tag)
 	throw "Could not recognize tag: " . a:tag
 endfunc
 
-func! vmustache#GetTagName(token)
+func! s:GetTagName(token)
 	let l:matches = matchlist(a:token, '{{[#/&!]\?\([^}]\+\)}}')
     return l:matches[1]
 endfunc
@@ -101,24 +101,24 @@ func! vmustache#Parse(tokens)
 	for token in a:tokens
 		call add(l:stack, token)
 		if (token["type"] == "section_end")
-			let l:stack = vmustache#ReduceSection(l:stack)
+			let l:stack = s:ReduceSection(l:stack)
 		elseif (token["type"] == "comment")
-			let l:stack = vmustache#ReduceComment(l:stack)
+			let l:stack = s:ReduceComment(l:stack)
 		elseif (token["type"] == "var_escaped")
-			let l:stack = vmustache#ReduceVariable(l:stack)
+			let l:stack = s:ReduceVariable(l:stack)
 		endif
 	endfor
-	let l:stack = vmustache#ReduceTemplate(l:stack)
+	let l:stack = s:ReduceTemplate(l:stack)
 	return l:stack[0]
 endfunc
 
-func! vmustache#ReduceSection(stack)
+func! s:ReduceSection(stack)
 	let l:endtoken = remove(a:stack, -1)
-	let l:section = vmustache#CreateSectionNode(l:endtoken["value"])
+	let l:section = s:CreateSectionNode(l:endtoken["value"])
 	let l:found = 0
 	while (!empty(a:stack))
 		let l:token = remove(a:stack, -1)
-		if (vmustache#IsSectionStart(l:token, section["name"]))
+		if (s:IsSectionStart(l:token, section["name"]))
 			let l:found = 1
 			break
 		endif
@@ -131,33 +131,33 @@ func! vmustache#ReduceSection(stack)
 	return a:stack
 endfunc
 
-func! vmustache#CreateSectionNode(name)
+func! s:CreateSectionNode(name)
 	return {"type": "section", "name": a:name, "children": []}
 endfunc
 
-func! vmustache#IsSectionStart(token, name)
+func! s:IsSectionStart(token, name)
 	return a:token["type"] == "section_start" && a:token["value"] == a:name
 endfunc
 
-func! vmustache#ReduceVariable(stack)
+func! s:ReduceVariable(stack)
 	let l:token = remove(a:stack, -1)
-	let l:variable = vmustache#CreateVariableNode(l:token["value"])
+	let l:variable = s:CreateVariableNode(l:token["value"])
 	call add(a:stack, l:variable)
 	return a:stack
 endfunc
 
-func! vmustache#CreateVariableNode(name)
+func! s:CreateVariableNode(name)
 	return {"type": "var_escaped", "name": a:name}
 endfunc
 
 " TODO: Should we actually keep comments and just not render them?
-func! vmustache#ReduceComment(stack)
+func! s:ReduceComment(stack)
 	call remove(a:stack, -1)
 	return a:stack
 endfunc
 
-func! vmustache#ReduceTemplate(stack)
-	let l:template = vmustache#CreateTemplateNode()
+func! s:ReduceTemplate(stack)
+	let l:template = s:CreateTemplateNode()
 	while (!empty(a:stack))
 		call insert(l:template["children"], remove(a:stack, -1))
 	endwhile
@@ -165,36 +165,36 @@ func! vmustache#ReduceTemplate(stack)
 	return a:stack
 endfunc
 
-func! vmustache#CreateTemplateNode()
+func! s:CreateTemplateNode()
 	return {"type": "template", "children": []}
 endfunc
 
 func! vmustache#DumpTemplate(template)
-	call vmustache#DumpNode(a:template, 0)
+	call s:DumpNode(a:template, 0)
 endfunc
 
-func! vmustache#DumpNode(node, indent)
+func! s:DumpNode(node, indent)
 	if (a:node["type"] == "template")
-		call vmustache#DumpText("Template", a:indent)
-		call vmustache#DumpChildren(a:node["children"], a:indent)
+		call s:DumpText("Template", a:indent)
+		call s:DumpChildren(a:node["children"], a:indent)
 	elseif (a:node["type"] == "section")
-		call vmustache#DumpText("Section '" . a:node["name"] . "'", a:indent)
-		call vmustache#DumpChildren(a:node["children"], a:indent)
+		call s:DumpText("Section '" . a:node["name"] . "'", a:indent)
+		call s:DumpChildren(a:node["children"], a:indent)
 	elseif (a:node["type"] == "var_escaped")
-		call vmustache#DumpText("Variable '" . a:node["name"] . "'", a:indent)
+		call s:DumpText("Variable '" . a:node["name"] . "'", a:indent)
 	elseif (a:node["type"] == "text")
-		call vmustache#DumpText("Text '" . a:node["value"] . "'", a:indent)
+		call s:DumpText("Text '" . a:node["value"] . "'", a:indent)
 	endif
 endfunc
 
-func! vmustache#DumpText(text, indent)
+func! s:DumpText(text, indent)
 	echo repeat("  ", a:indent) . a:text
 endfunc
 
-func! vmustache#DumpChildren(children, indent)
+func! s:DumpChildren(children, indent)
 	let l:indent = a:indent + 1
 	for child in a:children
-		call vmustache#DumpNode(child, l:indent)
+		call s:DumpNode(child, l:indent)
 	endfor
 endfunc
 
@@ -205,20 +205,20 @@ endfunc
 func! vmustache#Render(node, data)
 	let l:result = ""
 	if (a:node["type"] == "template")
-		let l:result = l:result . vmustache#RenderBlock(a:node, a:data)
+		let l:result = l:result . s:RenderBlock(a:node, a:data)
 	elseif (a:node["type"] == "section")
-		let l:result = l:result . vmustache#RenderSection(a:node, a:data)
+		let l:result = l:result . s:RenderSection(a:node, a:data)
 	elseif (a:node["type"] == "var_escaped")
-		let l:result = l:result . vmustache#RenderVariable(a:node, a:data)
+		let l:result = l:result . s:RenderVariable(a:node, a:data)
 	elseif (a:node["type"] == "text")
-		let l:result = l:result . vmustache#RenderText(a:node, a:data)
+		let l:result = l:result . s:RenderText(a:node, a:data)
 	else
 		throw "Unknown node: " . string(a:node)
 	endif
 	return l:result
 endfunc
 
-func! vmustache#RenderBlock(block, data)
+func! s:RenderBlock(block, data)
 	let l:result = ""
 	for child in a:block["children"]
 		if (has_key(child, "name") && has_key(a:data, child["name"]))
@@ -230,7 +230,7 @@ func! vmustache#RenderBlock(block, data)
 	return result
 endfunc
 
-func! vmustache#RenderSection(section, data)
+func! s:RenderSection(section, data)
 	let l:result = ""
 	if (type(a:data) != 3)
 		let l:data = [a:data]
@@ -238,18 +238,18 @@ func! vmustache#RenderSection(section, data)
 		let l:data = a:data
 	endif
 	for l:element in l:data
-		let l:result = l:result . vmustache#RenderBlock(a:section, l:element)
+		let l:result = l:result . s:RenderBlock(a:section, l:element)
 	endfor
 	return l:result
 endfunc
 
-func! vmustache#RenderVariable(variable, data)
+func! s:RenderVariable(variable, data)
 	" return "<data>" . a:data . "</data>"
 	" return string(a:data)
 	return a:data
 endfunc
 
-func! vmustache#RenderText(node, data)
+func! s:RenderText(node, data)
 	" return "<text>" . a:node["value"] . "</text>"
 	return a:node["value"]
 endfunc

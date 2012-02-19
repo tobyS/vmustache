@@ -12,13 +12,13 @@ let s:tagmap["{{[^#/&!]"]  = "var_escaped"
 " Usage
 """"""""
 
-func vmustache#RenderString(text, data)
+func! vmustache#RenderString(text, data)
 	let l:tokens = vmustache#Tokenize(a:text)
 	let l:template = vmustache#Parse(l:tokens)
 	return vmustache#Render(l:template, a:data)
 endfunc
 
-func vmustache#RenderFile(file, data)
+func! vmustache#RenderFile(file, data)
 	let l:text = join(readfile(a:file), "\n")
 	return vmustache#RenderString(l:text, a:data)
 endfunc
@@ -48,7 +48,7 @@ func! vmustache#Tokenize(text)
 	endwhile
 
 	if (l:lastindex < strlen(a:text))
-		call add(l:tokens, s:ExtractTextToken(a:text, l:lastindex + 1, strlen(a:text)))
+		call add(l:tokens, s:ExtractTextToken(a:text, l:lastindex, strlen(a:text)))
 	endif
 
 	return l:tokens

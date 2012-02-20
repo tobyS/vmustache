@@ -1,0 +1,2 @@
+{{#block_rendered}}Text is rendered{{/block_rendered}}
+{{#block_not_rendered_false}}Text is not rendered{{/block_not_rendered_false}}

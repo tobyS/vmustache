@@ -67,8 +67,8 @@ template::
 
 Providing this with the following data::
 
-    let l:data = {"list": [ {"topic": "Tokenize"}, {"topic": "Parse"}, \\
-        {"topic": "Render"} ]}
+    let l:data = {"list": [ {"topic": "Tokenize"}, {"topic": "Parse"},
+        \ {"topic": "Render"} ]}
 
 Will return in the following output::
 

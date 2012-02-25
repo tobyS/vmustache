@@ -240,7 +240,7 @@ func! s:RenderBlock(block, data)
 		if (has_key(child, "name") && has_key(a:data, child["name"]) && !empty(a:data[child["name"]]))
 			let l:result = l:result . vmustache#Render(child, a:data[child["name"]])
 		else
-			let l:result = l:result . vmustache#Render(child, {})
+			let l:result = l:result . vmustache#Render(child, [])
 		endif
 	endfor
 	return l:result

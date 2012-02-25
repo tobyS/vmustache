@@ -108,6 +108,17 @@ It will result in::
 
     This text will appear.
 
+Inverted sections
+=================
+
+Inverted sections behave the other way around. So, changing the example from
+above to
+
+::
+
+    This text will {{^optional}}optionally{{/optional}} appear.
+
+
 ----------------
 Missing features
 ----------------

@@ -128,6 +128,18 @@ will result in
 
     This text will  appear.
 
+while providing no value for ``"optional"``
+
+::
+
+    let l:data = {}
+
+will make the section content be rendered
+
+::
+
+    This text will optionally appear.
+
 ----------------
 Missing features
 ----------------

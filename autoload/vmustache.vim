@@ -222,6 +222,8 @@ func! vmustache#Render(node, data)
 		let l:result = l:result . s:RenderBlock(a:node, a:data)
 	elseif (a:node["type"] == "section")
 		let l:result = l:result . s:RenderSection(a:node, a:data)
+	elseif (a:node["type"] == "inverted_section")
+		let l:result = l:result . s:RenderInvertedSection(a:node, a:data)
 	elseif (a:node["type"] == "var_escaped")
 		let l:result = l:result . s:RenderVariable(a:node, a:data)
 	elseif (a:node["type"] == "text")
@@ -238,10 +240,10 @@ func! s:RenderBlock(block, data)
 		if (has_key(child, "name") && has_key(a:data, child["name"]) && !empty(a:data[child["name"]]))
 			let l:result = l:result . vmustache#Render(child, a:data[child["name"]])
 		else
-			let l:result = l:result . vmustache#Render(child, [])
+			let l:result = l:result . vmustache#Render(child, {})
 		endif
 	endfor
-	return result
+	return l:result
 endfunc
 
 func! s:RenderSection(section, data)
@@ -257,7 +259,18 @@ func! s:RenderSection(section, data)
 	return l:result
 endfunc
 
+func! s:RenderInvertedSection(section, data)
+	let l:result = ""
+	if (empty(a:data))
+		let l:result .= s:RenderBlock(a:section, {})
+	endif
+	return l:result
+endfunc
+
 func! s:RenderVariable(variable, data)
+	if (empty(a:data))
+		return ""
+	endif
 	" return "<data>" . a:data . "</data>"
 	" return string(a:data)
 	return a:data

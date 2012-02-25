@@ -45,6 +45,15 @@ Start of the block is indicated by a ``#``, the end tag is marked with a
 ``/``. A block can be used to make output optional or repeated for a number of
 values.
 
+Blocks can also be invered, which is indicated as follows::
+
+    {{^inverted_block}}
+        Block rendered without data.
+    {{/inverted_block}}
+
+While normal blocks are only rendered, if data is available, inverted blocks
+are rendered if there's none.
+
 Providing data
 ==============
 
@@ -99,6 +108,38 @@ It will result in::
 
     This text will appear.
 
+Inverted sections
+=================
+
+Inverted sections behave the other way around. So, changing the example from
+above to
+
+::
+
+    This text will {{^optional}}optionally{{/optional}} appear.
+
+(note the ``^`` instead of the ``/``), and using the data::
+
+    let l:data = {"optional": 1}
+
+will result in
+
+::
+
+    This text will  appear.
+
+while providing no value for ``"optional"``
+
+::
+
+    let l:data = {}
+
+will make the section content be rendere
+
+::
+
+    This text will optionally appear.
+
 ----------------
 Missing features
 ----------------
@@ -106,13 +147,11 @@ Missing features
 vmustache does not implement some mustache features (yet?). As there are:
 
 - Unescaped variables
-- Inverted sections
 - Partials
 
 The first does not make sense at all, since the output of vmustache is not
-escaped at all. How should that work without knowing the context. Inverted
-sections would be nice. Partials, too. If somebody wants them: Feel free to
-send a pull request. :)
+escaped at all. How should that work without knowing the context. Partials
+would be nice. If somebody wants them: Feel free to send a pull request. :)
 
 
 ..

@@ -122,6 +122,12 @@ above to
 
     let l:data = {"optional": 1}
 
+will result in
+
+::
+
+    This text will  appear.
+
 ----------------
 Missing features
 ----------------

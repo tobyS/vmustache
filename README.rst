@@ -108,38 +108,6 @@ It will result in::
 
     This text will appear.
 
-Inverted sections
-=================
-
-Inverted sections behave the other way around. So, changing the example from
-above to
-
-::
-
-    This text will {{^optional}}optionally{{/optional}} appear.
-
-(note the ``^`` instead of the ``/``), and using the data::
-
-    let l:data = {"optional": 1}
-
-will result in
-
-::
-
-    This text will  appear.
-
-while providing no value for ``"optional"``
-
-::
-
-    let l:data = {}
-
-will make the section content be rendere
-
-::
-
-    This text will optionally appear.
-
 ----------------
 Missing features
 ----------------

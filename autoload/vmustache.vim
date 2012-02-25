@@ -1,9 +1,13 @@
+let s:old_cpo = &cpo
+set cpo&vim
+
 let s:tagmap = {}
 let s:tagmap["{{#"] = "section_start"
+let s:tagmap["{{^"] = "inverted_section_start"
 let s:tagmap["{{/"] = "section_end"
 let s:tagmap["{{&"] = "var_unescaped"
 let s:tagmap["{{!"] = "comment"
-let s:tagmap["{{[^#/&!]"]  = "var_escaped"
+let s:tagmap["{{[^\^#/&!]"]  = "var_escaped"
 
 " TODO: Unescaped variables, inverted sections and partials are not
 " suppported, yet
@@ -88,7 +92,7 @@ func! s:GetTagType(tag)
 endfunc
 
 func! s:GetTagName(token)
-	let l:matches = matchlist(a:token, '{{[#/&!]\?\([^}]\+\)}}')
+	let l:matches = matchlist(a:token, '{{[#/&!\^]\?\([^}]\+\)}}')
     return l:matches[1]
 endfunc
 
@@ -114,29 +118,39 @@ endfunc
 
 func! s:ReduceSection(stack)
 	let l:endtoken = remove(a:stack, -1)
-	let l:section = s:CreateSectionNode(l:endtoken["value"])
-	let l:found = 0
+	let l:children = []
 	while (!empty(a:stack))
 		let l:token = remove(a:stack, -1)
-		if (s:IsSectionStart(l:token, section["name"]))
-			let l:found = 1
+		if (s:SectionMatches(l:token, l:endtoken))
+			let l:starttoken = l:token
 			break
 		endif
-		call insert(l:section["children"], l:token)
+		call insert(l:children, l:token)
 	endwhile
-	if (!l:found)
-		throw "Section missmatch. Missing start tag for '" . l:section["name"] . "'"
+	if (!exists("l:starttoken"))
+		throw "Section missmatch. Missing start tag for '" . l:endtoken["value"] . "'"
 	endif
-	call add(a:stack, l:section)
+	call add(a:stack, s:CreateSectionNode(l:starttoken, l:children))
 	return a:stack
 endfunc
 
-func! s:CreateSectionNode(name)
-	return {"type": "section", "name": a:name, "children": []}
+func! s:CreateSectionNode(starttoken, children)
+	let l:type = ""
+	if (a:starttoken["type"] == "inverted_section_start")
+		let l:type = "inverted_section"
+	else
+		let l:type = "section"
+	endif
+	return {
+		\ "type": l:type,
+		\ "name": a:starttoken["value"],
+		\ "children": a:children}
 endfunc
 
-func! s:IsSectionStart(token, name)
-	return a:token["type"] == "section_start" && a:token["value"] == a:name
+func! s:SectionMatches(starttoken, endtoken)
+	return (a:starttoken["type"] == "section_start"
+		\ || a:starttoken["type"] == "inverted_section_start" )
+		\ && a:starttoken["value"] == a:endtoken["value"]
 endfunc
 
 func! s:ReduceVariable(stack)
@@ -253,3 +267,5 @@ func! s:RenderText(node, data)
 	" return "<text>" . a:node["value"] . "</text>"
 	return a:node["value"]
 endfunc
+
+let &cpo = s:old_cpo

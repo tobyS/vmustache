@@ -1,0 +1,2 @@
+
+{'children': [{'type': 'text', 'value': ''}, {'name': 'negative_section', 'type': 'inverted_section', 'children': [{'type': 'text', 'value': ' '}, {'name': 'variable', 'type': 'var_escaped'}, {'type': 'text', 'value': ' '}]}], 'type': 'template'}

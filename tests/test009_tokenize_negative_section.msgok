@@ -1,0 +1,2 @@
+
+[{'type': 'text', 'value': ''}, {'type': 'inverted_section_start', 'value': 'negative_section'}, {'type': 'text', 'value': ' '}, {'type': 'var_escaped', 'value': 'variable'}, {'type': 'text', 'value': ' '}, {'type': 'section_end', 'value': 'negative_section'}]

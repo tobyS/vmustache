@@ -1,4 +1,4 @@
-let text = join(readfile("test004.in"), "\n")
+let text = join(readfile("test004_sections.in"), "\n")
 
 source helpers/complex_data.vim
 

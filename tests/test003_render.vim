@@ -1,4 +1,4 @@
-let text = join(readfile("test003.in"), "\n")
+let text = join(readfile("test003_render.in"), "\n")
 let data = {}
 let data["variable"] = "Some fancy info"
 let data["outer_section"] = []

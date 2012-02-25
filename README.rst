@@ -118,6 +118,9 @@ above to
 
     This text will {{^optional}}optionally{{/optional}} appear.
 
+(note the ``^`` instead of the ``/``), and using the data::
+
+    let l:data = {"optional": 1}
 
 ----------------
 Missing features

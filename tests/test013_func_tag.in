@@ -1,0 +1,3 @@
+{{?func: tr("foo", "o", "a")}}
+{{?func: tolower("I am a Text with UPPER case")}}
+{{?func: toupper("I am a Text with lower case")}}

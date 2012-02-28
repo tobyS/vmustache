@@ -1,13 +1,15 @@
 let s:old_cpo = &cpo
 set cpo&vim
 
-let s:tagmap = {}
-let s:tagmap["{{#"] = "section_start"
-let s:tagmap["{{^"] = "inverted_section_start"
-let s:tagmap["{{/"] = "section_end"
-let s:tagmap["{{&"] = "var_unescaped"
-let s:tagmap["{{!"] = "comment"
-let s:tagmap["{{[^\^#/&!]"]  = "var_escaped"
+let s:tagmap = []
+
+call add(s:tagmap, {"regex": "{{#\\([^}]\\+\\)}}", "type": "section_start"})
+call add(s:tagmap, {"regex": "{{^\\([^}]\\+\\)}}", "type": "inverted_section_start"})
+call add(s:tagmap, {"regex": "{{/\\([^}]\\+\\)}}", "type": "section_end"})
+call add(s:tagmap, {"regex": "{{&\\([^}]\\+\\)}}", "type": "var_unescaped"})
+call add(s:tagmap, {"regex": "{{!\\([^}]\\+\\)}}", "type": "comment"})
+call add(s:tagmap, {"regex": "{{?func:\\(\\(\\\\}\\|\\\\\\|[^}]\\)\\+\\)}}", "type": "function"})
+call add(s:tagmap, {"regex": "{{\\([^}]\\+\\)}}", "type": "var_escaped"})
 
 " TODO: Unescaped variables, inverted sections and partials are not
 " suppported, yet
@@ -33,6 +35,7 @@ endfunc
 
 func! vmustache#Tokenize(text)
 
+	" TODO: Allow } in script
 	let l:regex = "{{[^}]*}}"
 
 	let l:tokens = []
@@ -75,25 +78,17 @@ endfunc
 
 func! s:ExtractTagToken(text, start, end)
 	let l:token = s:ExtractToken(a:text, a:start, a:end)
-	return s:CreateToken(s:GetTagType(l:token), s:GetTagName(l:token))
+	for l:matcher in s:tagmap
+		if l:token =~ l:matcher["regex"]
+			let l:matches = matchlist(l:token, l:matcher["regex"])
+			return s:CreateToken(l:matcher["type"], l:matches[1])
+		endif
+	endfor
+	throw "Could not identify token '" . l:token . "'"
 endfunc
 
 func! s:CreateToken(type, value)
 	return {"type": a:type, "value": a:value}
-endfunc
-
-func! s:GetTagType(tag)
-	for l:key in keys(s:tagmap)
-		if a:tag =~ l:key
-			return s:tagmap[l:key]
-		endif
-	endfor
-	throw "Could not recognize tag: " . a:tag
-endfunc
-
-func! s:GetTagName(token)
-	let l:matches = matchlist(a:token, '{{[#/&!\^]\?\([^}]\+\)}}')
-    return l:matches[1]
 endfunc
 
 """"""""
@@ -110,6 +105,8 @@ func! vmustache#Parse(tokens)
 			let l:stack = s:ReduceComment(l:stack)
 		elseif (token["type"] == "var_escaped")
 			let l:stack = s:ReduceVariable(l:stack)
+		elseif (token["type"] == "script")
+			let l:stack = s:ReduceFunction(l:stack)
 		endif
 	endfor
 	let l:stack = s:ReduceTemplate(l:stack)
@@ -157,6 +154,14 @@ func! s:ReduceVariable(stack)
 	let l:token = remove(a:stack, -1)
 	let l:variable = s:CreateVariableNode(l:token["value"])
 	call add(a:stack, l:variable)
+	return a:stack
+endfunc
+
+func! s:ReduceFunction(stack)
+	let l:token = remove(a:stack, -1)
+	call add(a:stack, {
+		\ "type": "function",
+		\ "content": l:token["value"]})
 	return a:stack
 endfunc
 
@@ -226,6 +231,8 @@ func! vmustache#Render(node, data)
 		let l:result = l:result . s:RenderInvertedSection(a:node, a:data)
 	elseif (a:node["type"] == "var_escaped")
 		let l:result = l:result . s:RenderVariable(a:node, a:data)
+	elseif (a:node["type"] == "function")
+		let l:result = l:result . s:RenderFunction(a:node)
 	elseif (a:node["type"] == "text")
 		let l:result = l:result . s:RenderText(a:node, a:data)
 	else
@@ -274,6 +281,10 @@ func! s:RenderVariable(variable, data)
 	" return "<data>" . a:data . "</data>"
 	" return string(a:data)
 	return a:data
+endfunc
+
+func! s:RenderFunction(script)
+	return eval(a:script["value"])
 endfunc
 
 func! s:RenderText(node, data)

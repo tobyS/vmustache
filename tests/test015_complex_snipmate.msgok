@@ -1,0 +1,7 @@
+
+/**
+ * ${1:someFunction}
+ *
+ * @param ${2:array} $first ${3}
+ * @param ${4:mixed} $second ${5}
+ */

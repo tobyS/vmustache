@@ -3,13 +3,13 @@ set cpo&vim
 
 let s:tagmap = []
 
-call add(s:tagmap, {"regex": "{{#\\([^}]\\+\\)}}", "type": "section_start"})
-call add(s:tagmap, {"regex": "{{^\\([^}]\\+\\)}}", "type": "inverted_section_start"})
-call add(s:tagmap, {"regex": "{{/\\([^}]\\+\\)}}", "type": "section_end"})
-call add(s:tagmap, {"regex": "{{&\\([^}]\\+\\)}}", "type": "var_unescaped"})
-call add(s:tagmap, {"regex": "{{!\\([^}]\\+\\)}}", "type": "comment"})
+call add(s:tagmap, {"regex": "{{#\\([^{}]\\+\\)}}", "type": "section_start"})
+call add(s:tagmap, {"regex": "{{^\\([^{}]\\+\\)}}", "type": "inverted_section_start"})
+call add(s:tagmap, {"regex": "{{/\\([^{}]\\+\\)}}", "type": "section_end"})
+call add(s:tagmap, {"regex": "{{&\\([^{}]\\+\\)}}", "type": "var_unescaped"})
+call add(s:tagmap, {"regex": "{{!\\([^{}]\\+\\)}}", "type": "comment"})
 call add(s:tagmap, {"regex": "{{?func:\\(\\(\\\\}\\|\\\\\\|[^}]\\)\\+\\)}}", "type": "function"})
-call add(s:tagmap, {"regex": "{{\\([^}]\\+\\)}}", "type": "var_escaped"})
+call add(s:tagmap, {"regex": "{{\\([^{}]\\+\\)}}", "type": "var_escaped"})
 
 " TODO: Unescaped variables, inverted sections and partials are not
 " suppported, yet
@@ -59,7 +59,7 @@ endfunc
 func! vmustache#Tokenize(text)
 
 	" TODO: Allow } in script
-	let l:regex = "{{[^}]*}}"
+	let l:regex = "{{[^{}]*}}"
 
 	let l:tokens = []
 	let l:lastindex = -1

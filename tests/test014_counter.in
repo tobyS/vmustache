@@ -1,0 +1,4 @@
+{{?func: vmustache#InitCounter("params", 3)}}
+{{#parameters}}
+  {{name}}: {{?func: vmustache#IncrementCounter("params")}}
+{{/parameters}}

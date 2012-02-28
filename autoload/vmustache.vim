@@ -29,6 +29,29 @@ func! vmustache#RenderFile(file, data)
 	return vmustache#RenderString(l:text, a:data)
 endfunc
 
+"""""""
+" Tools
+"""""""
+
+let g:vmustache_counters = {}
+
+func! vmustache#InitCounter(name, ...)
+	let l:start = 0
+	if a:0 > 0
+		let l:start = a:1
+	endif
+	let g:vmustache_counters[a:name] = l:start
+	return ""
+endfunc
+
+func! vmustache#IncrementCounter(name)
+	if !has_key(g:vmustache_counters, a:name)
+		call vmustache#InitCounter(a:name)
+	endif
+	let g:vmustache_counters[a:name] += 1
+	return g:vmustache_counters[a:name]
+endfunc
+
 """""""""""""
 " Tokenizing
 """""""""""""

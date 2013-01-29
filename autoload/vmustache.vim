@@ -59,7 +59,7 @@ endfunc
 func! vmustache#Tokenize(text)
 
 	" TODO: Allow } in script
-	let l:regex = "{{[^}]*}}"
+	let l:regex = "{{[^{}]*}}"
 
 	let l:tokens = []
 	let l:lastindex = -1

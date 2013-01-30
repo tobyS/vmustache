@@ -1,4 +1,4 @@
-let text = join(readfile("test013_script_tag.in"), "\n")
+let text = join(readfile("test013_func_tag.in"), "\n")
 
 let tokens = vmustache#Tokenize(text)
 " echo "Tokenized:"

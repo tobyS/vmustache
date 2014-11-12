@@ -1,0 +1,2 @@
+{{#block_not_empty_string}}Text is rendered{{/block_not_empty_string}}
+{{#block_empty_string}}Text is not rendered{{/block_empty_string}}

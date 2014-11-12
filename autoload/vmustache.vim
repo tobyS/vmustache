@@ -279,7 +279,7 @@ endfunc
 func! s:RenderSection(section, data)
 	let l:result = ""
 	if (type(a:data) != 3)
-		let l:data = [a:data]
+		let l:data = [{a:section["name"]: a:data}]
 	else
 		let l:data = a:data
 	endif

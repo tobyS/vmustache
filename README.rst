@@ -90,7 +90,7 @@ Will return in the following output::
 Instead of a list with child data for the block, you can also provide just a
 plain value to make a block optional. For example::
 
-    This text will {{optional}}optionally{{/optional}} appear.
+    This text will {{#optional}}optionally{{/optional}} appear.
 
 With the data::
 

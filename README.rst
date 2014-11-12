@@ -6,6 +6,9 @@ vmustache is an implementation of the `Mustache template system`__ in VIMScript.
 
 __ http://mustache.github.com/
 
+.. image:: https://travis-ci.org/tobyS/vmustache.svg?branch=master
+   :target: https://travis-ci.org/tobyS/vmustache
+
 -----
 Usage
 -----

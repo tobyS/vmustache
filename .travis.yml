@@ -2,4 +2,4 @@ install:
     - sudo apt-get install vim
     - git clone https://github.com/inkarkat/runVimTests.git
 
-script: ../runVimTests/bin/runVimTests.sh --source `pwd`/autoload/vmustache.vim 
+script: ./runVimTests/bin/runVimTests.sh --source `pwd`/autoload/vmustache.vim 

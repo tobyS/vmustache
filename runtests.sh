@@ -1,2 +1,2 @@
 #!/bin/bash
-runVimTests.sh --source `pwd`/autoload/vmustache.vim ${1-tests/}
+~/.vim/bundle/runVimTests/bin/runVimTests.sh --source "`pwd`/autoload/vmustache.vim" "${1-tests/}"

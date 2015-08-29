@@ -21,12 +21,12 @@ call add(s:tagmap, {"regex": "{{\\([^{}]\\+\\)}}", "type": "var_escaped"})
 func! vmustache#RenderString(text, data)
 	let l:tokens = vmustache#Tokenize(a:text)
 	let l:template = vmustache#Parse(l:tokens)
-	return vmustache#Render(l:template, a:data)
+	return vmustache#Render(l:template, vmustache#MergeData(a:data))
 endfunc
 
 func! vmustache#RenderFile(file, data)
 	let l:text = join(readfile(a:file), "\n")
-	return vmustache#RenderString(l:text, a:data)
+	return vmustache#RenderString(l:text, vmustache#MergeData(a:data))
 endfunc
 
 """""""
@@ -50,6 +50,15 @@ func! vmustache#IncrementCounter(name)
 	endif
 	let g:vmustache_counters[a:name] += 1
 	return g:vmustache_counters[a:name]
+endfunc
+
+func! vmustache#MergeData(data)
+    let l:merged_data = {}
+    if exists('b:vmustache_view_model')
+        call extend(l:merged_data, b:vmustache_view_model, "force")
+    endif
+    call extend(l:merged_data, a:data, "force")
+    return l:merged_data
 endfunc
 
 """""""""""""
